@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
 
+  // Get base URL from request
+  const baseUrl = `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+
   // Verify state (CSRF protection)
   if (!state || state !== session.state) {
     return NextResponse.redirect(new URL('/?error=invalid_state', request.url));
@@ -30,8 +33,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Exchange code for tokens
-    const tokenResponse = await exchangeCodeForToken(code, codeVerifier);
+    // Exchange code for tokens with dynamic redirect URI
+    const tokenResponse = await exchangeCodeForToken(code, codeVerifier, baseUrl);
 
     // Calculate expiration time
     const expiresAt = Date.now() + tokenResponse.expires_in * 1000;

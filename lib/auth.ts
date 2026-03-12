@@ -31,12 +31,33 @@ export function generatePKCE(): { codeVerifier: string; codeChallenge: string } 
 }
 
 /**
+ * Get redirect URI - auto-detects from environment or uses configured value
+ */
+export function getRedirectUri(baseUrl?: string): string {
+  // If FIGMA_REDIRECT_URI is explicitly set, use it
+  if (process.env.FIGMA_REDIRECT_URI) {
+    return process.env.FIGMA_REDIRECT_URI;
+  }
+
+  // Otherwise, auto-detect from the request URL
+  if (baseUrl) {
+    return `${baseUrl}/api/auth/callback`;
+  }
+
+  // Fallback to NEXTAUTH_URL or localhost
+  const fallbackBase = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  return `${fallbackBase}/api/auth/callback`;
+}
+
+/**
  * Build Figma authorization URL
  */
-export function buildAuthorizationUrl(state: string, codeChallenge: string): string {
+export function buildAuthorizationUrl(state: string, codeChallenge: string, baseUrl?: string): string {
+  const redirectUri = getRedirectUri(baseUrl);
+
   const params = new URLSearchParams({
     client_id: process.env.FIGMA_CLIENT_ID!,
-    redirect_uri: process.env.FIGMA_REDIRECT_URI!,
+    redirect_uri: redirectUri,
     scope: SCOPES.join(' '),
     state,
     response_type: 'code',
@@ -52,15 +73,18 @@ export function buildAuthorizationUrl(state: string, codeChallenge: string): str
  */
 export async function exchangeCodeForToken(
   code: string,
-  codeVerifier: string
+  codeVerifier: string,
+  baseUrl?: string
 ): Promise<FigmaTokenResponse> {
+  const redirectUri = getRedirectUri(baseUrl);
+
   const response = await fetch(FIGMA_TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       client_id: process.env.FIGMA_CLIENT_ID!,
       client_secret: process.env.FIGMA_CLIENT_SECRET!,
-      redirect_uri: process.env.FIGMA_REDIRECT_URI!,
+      redirect_uri: redirectUri,
       code,
       code_verifier: codeVerifier,
       grant_type: 'authorization_code',
