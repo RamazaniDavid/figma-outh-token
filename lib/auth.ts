@@ -20,17 +20,6 @@ export function generateState(): string {
 }
 
 /**
- * Generate PKCE code verifier and challenge
- */
-export function generatePKCE(): { codeVerifier: string; codeChallenge: string } {
-  const codeVerifier = base64UrlEncode(crypto.randomBytes(32));
-  const hash = crypto.createHash('sha256').update(codeVerifier).digest();
-  const codeChallenge = base64UrlEncode(hash);
-
-  return { codeVerifier, codeChallenge };
-}
-
-/**
  * Get redirect URI - auto-detects from environment or uses configured value
  */
 export function getRedirectUri(baseUrl?: string): string {
@@ -52,7 +41,7 @@ export function getRedirectUri(baseUrl?: string): string {
 /**
  * Build Figma authorization URL
  */
-export function buildAuthorizationUrl(state: string, codeChallenge: string, baseUrl?: string): string {
+export function buildAuthorizationUrl(state: string, baseUrl?: string): string {
   const redirectUri = getRedirectUri(baseUrl);
 
   const params = new URLSearchParams({
@@ -61,8 +50,6 @@ export function buildAuthorizationUrl(state: string, codeChallenge: string, base
     scope: SCOPES.join(','),
     state,
     response_type: 'code',
-    code_challenge: codeChallenge,
-    code_challenge_method: 'S256',
   });
 
   return `${FIGMA_AUTH_URL}?${params.toString()}`;
@@ -73,7 +60,6 @@ export function buildAuthorizationUrl(state: string, codeChallenge: string, base
  */
 export async function exchangeCodeForToken(
   code: string,
-  codeVerifier: string,
   baseUrl?: string
 ): Promise<FigmaTokenResponse> {
   const redirectUri = getRedirectUri(baseUrl);
@@ -86,7 +72,6 @@ export async function exchangeCodeForToken(
       client_secret: process.env.FIGMA_CLIENT_SECRET!,
       redirect_uri: redirectUri,
       code,
-      code_verifier: codeVerifier,
       grant_type: 'authorization_code',
     }),
   });
@@ -120,15 +105,4 @@ export async function refreshAccessToken(refreshToken: string): Promise<FigmaTok
   }
 
   return await response.json();
-}
-
-/**
- * Base64 URL encoding helper
- */
-function base64UrlEncode(buffer: Buffer): string {
-  return buffer
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
 }

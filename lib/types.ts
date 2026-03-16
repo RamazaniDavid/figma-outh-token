@@ -8,9 +8,8 @@ export interface SessionData {
     email: string;
     img_url: string;
   };
-  // PKCE temporary storage
+  // OAuth state for CSRF protection
   state?: string;
-  codeVerifier?: string;
 }
 
 export interface FigmaTokenResponse {

@@ -26,15 +26,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/?error=missing_code', request.url));
   }
 
-  // Retrieve code_verifier
-  const codeVerifier = session.codeVerifier;
-  if (!codeVerifier) {
-    return NextResponse.redirect(new URL('/?error=missing_verifier', request.url));
-  }
-
   try {
     // Exchange code for tokens with dynamic redirect URI
-    const tokenResponse = await exchangeCodeForToken(code, codeVerifier, baseUrl);
+    const tokenResponse = await exchangeCodeForToken(code, baseUrl);
 
     // Calculate expiration time
     const expiresAt = Date.now() + tokenResponse.expires_in * 1000;
@@ -49,9 +43,8 @@ export async function GET(request: NextRequest) {
     const userInfo = await figmaClient.getMe();
     session.user = userInfo;
 
-    // Clear PKCE data
+    // Clear state
     delete session.state;
-    delete session.codeVerifier;
 
     await session.save();
 
