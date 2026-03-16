@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import ExternalBackendGenerator from './dashboard/components/ExternalBackendGenerator';
+// import ExternalBackendGenerator from './dashboard/components/ExternalBackendGenerator';
 
 interface User {
   id: string;
@@ -24,8 +24,31 @@ export default function Home() {
   const [tokenCopied, setTokenCopied] = useState(false);
   const [showToken, setShowToken] = useState(false);
 
-  // Get backend configuration from environment variables
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8283';
+  // Backend configuration state
+  const [backendUrl, setBackendUrl] = useState('');
+  const [backendApiKey, setBackendApiKey] = useState('');
+  const [showBackendConfig, setShowBackendConfig] = useState(false);
+
+  // Load backend configuration from localStorage
+  useEffect(() => {
+    const savedUrl = localStorage.getItem('backendUrl');
+    const savedApiKey = localStorage.getItem('backendApiKey');
+
+    setBackendUrl(savedUrl || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8283');
+    setBackendApiKey(savedApiKey || process.env.NEXT_PUBLIC_BACKEND_API_KEY || '');
+  }, []);
+
+  // Save backend URL to localStorage when it changes
+  const handleBackendUrlChange = (url: string) => {
+    setBackendUrl(url);
+    localStorage.setItem('backendUrl', url);
+  };
+
+  // Save backend API key to localStorage when it changes
+  const handleBackendApiKeyChange = (key: string) => {
+    setBackendApiKey(key);
+    localStorage.setItem('backendApiKey', key);
+  };
 
   useEffect(() => {
     // Check for error params in URL
@@ -170,8 +193,61 @@ export default function Home() {
             )}
           </div>
 
+          {/* Backend Configuration Section */}
+          {/* <div className="mb-8 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-white mb-1">Backend Configuration</h2>
+                <p className="text-sm text-slate-400">Configure your external backend service</p>
+              </div>
+              <button
+                onClick={() => setShowBackendConfig(!showBackendConfig)}
+                className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-sm transition-colors"
+              >
+                {showBackendConfig ? 'Hide' : 'Show'}
+              </button>
+            </div>
+
+            {showBackendConfig && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Backend URL
+                  </label>
+                  <input
+                    type="text"
+                    value={backendUrl}
+                    onChange={(e) => handleBackendUrlChange(e.target.value)}
+                    placeholder="http://localhost:8283"
+                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Backend API Key
+                  </label>
+                  <input
+                    type="password"
+                    value={backendApiKey}
+                    onChange={(e) => handleBackendApiKeyChange(e.target.value)}
+                    placeholder="Enter your backend API key"
+                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-300 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Configuration is saved in your browser's local storage
+                </div>
+              </div>
+            )}
+          </div> */}
+
           {/* Info Banner */}
-          <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/50 rounded-xl">
+          {/* <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/50 rounded-xl">
             <div className="flex items-start gap-3">
               <svg className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -179,23 +255,25 @@ export default function Home() {
               <div className="flex-1">
                 <p className="text-sm font-medium text-blue-400">External Backend Mode</p>
                 <p className="text-sm text-blue-300 mt-1">
-                  This dashboard uses the standalone Fastify backend service at <code className="bg-slate-700 px-1 rounded">{backendUrl}</code>.
+                  Using backend at <code className="bg-slate-700 px-1 rounded">{backendUrl}</code>.
                   Real-time progress updates are powered by Firebase.
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Generator Component */}
-          {session.accessToken && (
+          {/* {session.accessToken && backendUrl && (
             <ExternalBackendGenerator
               initialUrl=""
               figmaToken={session.accessToken}
               onComplete={handleComplete}
               onError={handleError}
               domainId="12702"
+              backendUrl={backendUrl}
+              backendApiKey={backendApiKey}
             />
-          )}
+          )} */}
         </div>
       </div>
     );

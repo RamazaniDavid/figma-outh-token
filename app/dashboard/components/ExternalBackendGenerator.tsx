@@ -30,6 +30,10 @@ interface ExternalBackendGeneratorProps {
   onError?: (error: string) => void;
   /** Domain ID for multi-tenant storage (optional) */
   domainId?: string;
+  /** Backend URL (optional, defaults to env var) */
+  backendUrl?: string;
+  /** Backend API key (optional, defaults to env var) */
+  backendApiKey?: string;
 }
 
 export default function ExternalBackendGenerator({
@@ -39,12 +43,15 @@ export default function ExternalBackendGenerator({
   onComplete,
   onError,
   domainId,
+  backendUrl: propsBackendUrl,
+  backendApiKey: propsBackendApiKey,
 }: ExternalBackendGeneratorProps) {
   const [figmaUrl, setFigmaUrl] = useState(initialUrl);
   const [showProgress, setShowProgress] = useState(false);
 
-  // Get backend URL from environment
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8283';
+  // Get backend URL from props or environment
+  const backendUrl = propsBackendUrl || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8283';
+  const backendApiKey = propsBackendApiKey || process.env.NEXT_PUBLIC_BACKEND_API_KEY || '';
 
   const { generate, isGenerating, error, progress, metadata, sections, clearError, reset } =
     useReactProjectGeneration();
@@ -80,7 +87,7 @@ export default function ExternalBackendGenerator({
     setShowProgress(true);
 
     try {
-      await generate(figmaUrl, figmaToken, backendUrl, domainId);
+      await generate(figmaUrl, figmaToken, backendUrl, domainId, backendApiKey);
       console.log('[EXTERNAL] Generation completed successfully');
     } catch (err) {
       // Error is already handled by the hook

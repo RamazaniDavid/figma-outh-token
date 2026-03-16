@@ -30,7 +30,7 @@ export interface GenerationProgress {
 }
 
 export interface UseReactProjectGenerationResult {
-  generate: (figmaUrl: string, accessToken?: string, backendUrl?: string, domainId?: string) => Promise<void>;
+  generate: (figmaUrl: string, accessToken?: string, backendUrl?: string, domainId?: string, backendApiKey?: string) => Promise<void>;
   isGenerating: boolean;
   error: string | null;
   progress: GenerationProgress[];
@@ -72,7 +72,7 @@ export function useReactProjectGeneration(): UseReactProjectGenerationResult {
 
 
   const generate = useCallback(
-    async (figmaUrl: string, accessToken?: string, backendUrl?: string, domainId?: string) => {
+    async (figmaUrl: string, accessToken?: string, backendUrl?: string, domainId?: string, backendApiKey?: string) => {
       // Reset state
       setIsGenerating(true);
       setError(null);
@@ -133,7 +133,8 @@ export function useReactProjectGeneration(): UseReactProjectGenerationResult {
             throw new Error('Figma access token is required for external backend');
           }
           requestBody.figmaToken = accessToken;
-          headers['Authorization'] = `Bearer ${process.env.NEXT_PUBLIC_BACKEND_API_KEY || 'your-backend-api-key'}`;
+          const apiKey = backendApiKey || process.env.NEXT_PUBLIC_BACKEND_API_KEY || 'your-backend-api-key';
+          headers['Authorization'] = `Bearer ${apiKey}`;
           addProgress('auth', 'Using external backend authentication', 10);
         } else {
           // For Next.js route, use existing auth logic

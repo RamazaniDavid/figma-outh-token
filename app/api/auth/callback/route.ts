@@ -110,9 +110,9 @@ export async function GET(request: NextRequest) {
     await session.save();
     console.log('[OAuth Callback] Session saved successfully');
 
-    // Redirect to dashboard
-    console.log('[OAuth Callback] Redirecting to dashboard');
-    return NextResponse.redirect(new URL('/dashboard', baseUrl));
+    // Redirect to home page
+    console.log('[OAuth Callback] Redirecting to home page');
+    return NextResponse.redirect(new URL('/', baseUrl));
   } catch (error) {
     console.error('[OAuth Callback] OAuth callback error:', {
       error: error instanceof Error ? error.message : error,
