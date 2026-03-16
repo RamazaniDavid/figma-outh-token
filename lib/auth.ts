@@ -58,7 +58,7 @@ export function buildAuthorizationUrl(state: string, codeChallenge: string, base
   const params = new URLSearchParams({
     client_id: process.env.FIGMA_CLIENT_ID!,
     redirect_uri: redirectUri,
-    scope: SCOPES.join(' '),
+    scope: SCOPES.join(','),
     state,
     response_type: 'code',
     code_challenge: codeChallenge,
@@ -80,8 +80,8 @@ export async function exchangeCodeForToken(
 
   const response = await fetch(FIGMA_TOKEN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
       client_id: process.env.FIGMA_CLIENT_ID!,
       client_secret: process.env.FIGMA_CLIENT_SECRET!,
       redirect_uri: redirectUri,
@@ -105,8 +105,8 @@ export async function exchangeCodeForToken(
 export async function refreshAccessToken(refreshToken: string): Promise<FigmaTokenResponse> {
   const response = await fetch(FIGMA_TOKEN_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
       client_id: process.env.FIGMA_CLIENT_ID!,
       client_secret: process.env.FIGMA_CLIENT_SECRET!,
       refresh_token: refreshToken,
