@@ -1,13 +1,39 @@
 import { NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-import { sessionOptions } from '@/lib/session';
-import { SessionData } from '@/lib/types';
+import { clearSession } from '@/lib/auth';
 
+/**
+ * POST /api/auth/logout
+ * Clears the session and logs out the user
+ */
 export async function POST() {
-  const cookieStore = await cookies();
-  const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
-  session.destroy();
+  try {
+    await clearSession();
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Logout error:', error);
+    
+    return NextResponse.json(
+      { success: false, error: 'Failed to logout' },
+      { status: 500 }
+    );
+  }
+}
 
-  return NextResponse.json({ success: true });
+/**
+ * GET /api/auth/logout
+ * Alternative logout that redirects to home
+ */
+export async function GET() {
+  try {
+    await clearSession();
+    
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    return NextResponse.redirect(new URL('/', baseUrl));
+  } catch (error) {
+    console.error('Logout error:', error);
+    
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    return NextResponse.redirect(new URL('/?error=logout_failed', baseUrl));
+  }
 }
